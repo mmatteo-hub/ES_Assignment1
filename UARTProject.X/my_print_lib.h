@@ -34,7 +34,8 @@
 #include <xc.h> // include processor files - each processor file is guarded.  
 
 void displayText(char text[]);
-void displayWord(char word);
-void clearDisplay();
+void init_SPI();
+void clearFirstRow();
+void clearSecondRow();
 
 #endif

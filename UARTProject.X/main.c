@@ -54,15 +54,14 @@
 
 int seconds = 0;
 
-circular_buffer * buffer_ptr;
+circular_buffer buffer;
 
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     // UART receive interrupt, triggered when buffer is 3/4 full
-
     IFS1bits.U2RXIF = 0; // reset interrupt flag
-    
-    while(U2STAbits.URXDA == 1) // there is something to read
-        cb_push_back(buffer_ptr, U2RXREG); // put data in the circular buffer
+    while(U2STAbits.URXDA == 1){ // there is something to read
+        cb_push_back(&buffer, U2RXREG); // put data in the circular buffer
+    }
 }
 
 void algorithm(){
@@ -71,52 +70,47 @@ void algorithm(){
 
 int main(void) {
     char word;
+    int i = 0;
+    cb_init(&buffer);
     
     U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
     U2MODEbits.UARTEN = 1; // enable UART 
     U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
     U2STAbits.URXISEL = 0b10;   // set interrupt when buffer is 3/4 full
     IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
-
-    SPI1CONbits.MSTEN = 1; // master mode 
-    SPI1CONbits.MODE16 = 0; // 8 bit mode 
-    SPI1CONbits.PPRE = 3; // primary prescaler 
-    SPI1CONbits.SPRE = 6; // secondary prescaler 
-    SPI1STATbits.SPIEN = 1; // enable SPI
     
+    init_SPI();
     tmr_wait_ms(TIMER1, 1500);
-  
+
     tmr_setup_period(TIMER1, 10);
-    
-    cb_init(buffer_ptr);
-    
+
     while (1) {
+        algorithm();
+        
         // remove residual data
         IEC1bits.U2RXIE = 0; // disable UART receiver interrupt
         while (U2STAbits.URXDA == 1){ // there is something to read
-            int error = cb_push_back(buffer_ptr, U2RXREG); // put data in the circular buffer
-            if(error == -1)
-                U2TXREG = 'E';
-            U2TXREG = buffer_ptr -> count + '0';
+            cb_push_back(&buffer, U2RXREG); // put data in the circular buffer
         }
         IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
         
-        //U2TXREG = buffer_ptr -> count + '0';
-        while(buffer_ptr -> count != 0){
-            cb_pop_front(buffer_ptr, &word);
-            U2TXREG = word;
+        // print to the LCD all chars in the circular buffer
+        while(buffer.count != 0){
+            cb_pop_front(&buffer, &word);
+            i++;
+            
+            // if the end of the row has been reached, clear the first row and 
+            // start writing again from the first row first column
+            if (i == 17) {
+                clearFirstRow();
+                i = 1;
+            }
+            
+            while (SPI1STATbits.SPITBF == 1); // wait until not full
+            SPI1BUF = word; // write on the LCD
         }
-        
-        
-        //while (U2STAbits.URXDA == 0); // wait until there is a char to read
-        //char word = U2RXREG; // read the input char
-        //U2TXREG = word;
-        //displayWord(word); // print the char on the LCD
 
-        
-        tmr_wait_period(TIMER1);
+        tmr_wait_period(TIMER1); // loop at 100Hz
     }
-    
-    while(1);
     return 0;
 }

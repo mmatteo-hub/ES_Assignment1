@@ -7,7 +7,6 @@
 
 
 #include "xc.h"
-
 #include "my_circular_buffer_lib.h"
 
 int cb_length()
@@ -29,9 +28,7 @@ int cb_push_back(circular_buffer *cb, char item)
     
     cb->container[cb->head] = item;
     cb->head = (cb->head+1) % SIZE;
-    U2TXREG = (cb->count)+'0';
-    cb->count = 1;
-    U2TXREG = (cb->count)+'0';
+    cb->count++;
     return 0;
 }
 
