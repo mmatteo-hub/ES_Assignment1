@@ -42,6 +42,7 @@
 
 #include "my_timer_lib.h"
 #include "my_print_lib.h"
+#include "my_circular_buffer_lib.h"
 #include <stdio.h>
 
 // Definition of timers.
@@ -53,84 +54,69 @@
 
 int seconds = 0;
 
-void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt() {
-    // button interrupt
+circular_buffer * buffer_ptr;
 
-    IFS0bits.INT0IF = 0; // reset interrupt flag
-    IEC0bits.INT0IE = 0; // disable button interrupt
-    tmr_setup_period(TIMER3, 20); // setup timer 3 for mechanical bouncing
+void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
+    // UART receive interrupt, triggered when buffer is 3/4 full
+
+    IFS1bits.U2RXIF = 0; // reset interrupt flag
+    
+    while(U2STAbits.URXDA == 1) // there is something to read
+        cb_push_back(buffer_ptr, U2RXREG); // put data in the circular buffer
 }
 
-void __attribute__((__interrupt__, __auto_psv__)) _T3Interrupt() {
-    // timer 3 interrupt
-
-    IFS0bits.T3IF = 0; // reset interrupt flag
-
-    if (PORTEbits.RE8 == 1) { // if the button S5 is not pressed
-        seconds = 0;
-    }
-
-    T3CONbits.TON = 0; // stop the timer
-
-    // Mind the sequence !!!!
-    IFS0bits.INT0IF = 0; // reset interrupt flag
-    IEC0bits.INT0IE = 1; // enable button interrupt
-}
-
-void exercise1(void) {
-    tmr_wait_ms(TIMER1, 1500);
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
-    while (U2STAbits.URXDA == 0); // wait until there is a char to read
-    char word = U2RXREG;   // read the input char
-    displayWord(word);   // print the char on the LCD
-    while(1);   // wait for not resetting
-}
-
-void exercise1b(void) {
-    tmr_wait_ms(TIMER1, 1500);
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
-    while(1){
-        while (U2STAbits.URXDA == 0); // wait until there is a char to read
-        char word = U2RXREG; // read the input char
-        displayWord(word); // print the char on the LCD
-    }
-}
-
-void exercise2(void) {
-    tmr_wait_ms(TIMER1, 1500);
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
-    while(1){
-        while (U2STAbits.URXDA == 0); // wait until there is a char to read
-        char word = U2RXREG; // read the input char
-        U2TXREG = word;
-    }
-}
-
-void exercise3(void) {
-    tmr_wait_ms(TIMER1, 1500);
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
-    while(1){
-        while (U2STAbits.URXDA == 0); // wait until there is a char to read
-        char word = U2RXREG; // read the input char
-        U2TXREG = word;
-        displayWord(word); // print the char on the LCD
-    }
+void algorithm(){
+    tmr_wait_ms(TIMER2, 7);
 }
 
 int main(void) {
+    char word;
     
-    // exercise1();
-    // exercise1b();
-    // exercise2();
-    exercise3();
+    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
+    U2MODEbits.UARTEN = 1; // enable UART 
+    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
+    U2STAbits.URXISEL = 0b10;   // set interrupt when buffer is 3/4 full
+    IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
+
+    SPI1CONbits.MSTEN = 1; // master mode 
+    SPI1CONbits.MODE16 = 0; // 8 bit mode 
+    SPI1CONbits.PPRE = 3; // primary prescaler 
+    SPI1CONbits.SPRE = 6; // secondary prescaler 
+    SPI1STATbits.SPIEN = 1; // enable SPI
     
+    tmr_wait_ms(TIMER1, 1500);
+  
+    tmr_setup_period(TIMER1, 10);
+    
+    cb_init(buffer_ptr);
+    
+    while (1) {
+        // remove residual data
+        IEC1bits.U2RXIE = 0; // disable UART receiver interrupt
+        while (U2STAbits.URXDA == 1){ // there is something to read
+            int error = cb_push_back(buffer_ptr, U2RXREG); // put data in the circular buffer
+            if(error == -1)
+                U2TXREG = 'E';
+            U2TXREG = buffer_ptr -> count + '0';
+        }
+        IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
+        
+        //U2TXREG = buffer_ptr -> count + '0';
+        while(buffer_ptr -> count != 0){
+            cb_pop_front(buffer_ptr, &word);
+            U2TXREG = word;
+        }
+        
+        
+        //while (U2STAbits.URXDA == 0); // wait until there is a char to read
+        //char word = U2RXREG; // read the input char
+        //U2TXREG = word;
+        //displayWord(word); // print the char on the LCD
+
+        
+        tmr_wait_period(TIMER1);
+    }
+    
+    while(1);
     return 0;
 }
