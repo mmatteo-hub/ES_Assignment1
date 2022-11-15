@@ -142,10 +142,9 @@ void recUARTOverFlow() // manage the overflow for the UART in receive
 int main(void)
 {
     char word;
-    int line_index = 0;
+    int column_index = 0;
     cb_init(&buffer);
     int ret_val_pop = -1;
-    int ret_val_push = 1;
     short int err = 0;
     
     U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
@@ -199,7 +198,7 @@ int main(void)
         if(flagS5ToUART == 1) // write to the UART iff flag enabled
         {
             char str[5];
-            sprintf(str, "%d", character_counter);
+            sprintf(str, "%ld", character_counter);
 
             for(int i = 0; str[i] != '\0'; i++)
                 U2TXREG = str[i];
@@ -217,35 +216,34 @@ int main(void)
             flagS6Reset = 0; // reset flag to reset
         }
         
+        while (SPI1STATbits.SPITBF == 1);
+        SPI1BUF = 0x80 + column_index;
+    
         // print to the LCD all chars in the circular buffer
         while(buffer.count != 0 && !IFS0bits.T1IF) // while the buffer count is different and the timer has not expired yet
+        
+        // while(buffer.count != 0)
         {
             ret_val_pop = cb_pop_front(&buffer, &word);
             if(ret_val_pop) // something read
             {
-                line_index++;
                 character_counter++; // store the number of character received
 
                 // if the end of the row has been reached, clear the first row and 
                 // start writing again from the first row first column
-                if(line_index == 17)
-                {
+                if(column_index == 0)
                     clearFirstRow();
-                    line_index = 1;
-                }
 
                 if(word == '\r' || word == '\n')
                 {
                     clearFirstRow();
-                    line_index = 1;
+                    column_index = 0;
                 }
-
                 else
                 {
                     while (SPI1STATbits.SPITBF == 1); // wait until not full
-                    SPI1BUF = 0x80 + line_index - 1; // set the cursor to the correct index
-                    while (SPI1STATbits.SPITBF == 1); // wait until not full
                     SPI1BUF = word; // write on the LCD
+                    column_index = (column_index + 1) % 16;
                 }
             }
         }

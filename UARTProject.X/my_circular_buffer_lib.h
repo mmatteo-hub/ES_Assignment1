@@ -33,7 +33,7 @@
 
 #include <xc.h> // include processor files - each processor file is guarded.
 
-#define SIZE 100
+#define SIZE 15
 
 typedef struct circular_buffer {
     char container[SIZE]; // the container of the items

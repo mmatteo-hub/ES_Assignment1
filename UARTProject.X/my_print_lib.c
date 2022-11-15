@@ -70,8 +70,6 @@ void clearSecondRow()
         while (SPI1STATbits.SPITBF == 1); // wait until not full
         SPI1BUF = ' ';
     }
-    while (SPI1STATbits.SPITBF == 1);
-    SPI1BUF = 0xC0;
 }
 
 void update_second_line(long int number)
