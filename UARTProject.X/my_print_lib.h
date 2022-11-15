@@ -37,7 +37,7 @@ void displayText(char text[]);
 void init_SPI();
 void clearFirstRow();
 void clearSecondRow();
-void update_second_line(int num);
+void update_second_line(long int num);
 void refresh_second_line(void);
 
 #endif

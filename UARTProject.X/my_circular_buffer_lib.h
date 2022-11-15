@@ -43,9 +43,9 @@ typedef struct circular_buffer {
 } circular_buffer;
 
 int cb_length();
-void cb_init(circular_buffer *cb);
-int cb_push_back(circular_buffer *cb, char item);
-int cb_pop_front(circular_buffer *cb, char* item);
+void cb_init(volatile circular_buffer *cb);
+int cb_push_back(volatile circular_buffer *cb, char item);
+int cb_pop_front(volatile circular_buffer *cb, char* item);
 
 #endif
 
