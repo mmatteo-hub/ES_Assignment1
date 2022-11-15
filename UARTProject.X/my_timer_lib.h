@@ -31,6 +31,13 @@
 #ifndef MY_TIMER_LIB_H
 #define	MY_TIMER_LIB_H
 
+// Definition of timers.
+#define TIMER1 1 
+#define TIMER2 2
+#define TIMER3 3 
+#define TIMER4 4 
+#define TIMER5 5
+
 #include <xc.h> // include processor files - each processor file is guarded.  
 
 void tmr_setup_period(int timer, int ms); 
