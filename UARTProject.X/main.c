@@ -40,23 +40,30 @@
 
 #include <xc.h>
 
+#define TIMER_FOR_BUTTON_S5 3
+#define TIMER_FOR_BUTTON_S6 4
+
 #include "my_timer_lib.h"
 #include "my_print_lib.h"
 #include "my_circular_buffer_lib.h"
+#include "my_btn_lib.h"
 #include <stdio.h>
-
-// Definition of timers.
-#define TIMER1 1 
-#define TIMER2 2
-#define TIMER3 3 
-#define TIMER4 4 
-#define TIMER5 5
 
 // global variables
 volatile circular_buffer buffer;
 volatile long int character_counter = 0;
 volatile short int flagS5ToUART = 0;
 volatile short int flagS6Reset = 0;
+
+void onBtnS5Released()
+{
+    flagS5ToUART = 1;
+}
+
+void onBtnS6Released()
+{
+    flagS6Reset = 1;
+}
 
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
 {
@@ -75,52 +82,6 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
     
     if(err)
         LATBbits.LATB0 = 0; // LED D3 off
-}
-
-// button interrupt S5
-void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt()
-{
-    IFS0bits.INT0IF = 0;           // reset interrupt flag
-    IEC0bits.INT0IE = 0;           // disable button interrupt
-    tmr_setup_period(TIMER3, 30);  // setup timer 3 for mechanical bouncing
-}
-
-// timer 3 interrupt
-void __attribute__((__interrupt__, __auto_psv__)) _T3Interrupt()
-{
-    IFS0bits.T3IF = 0; // reset interrupt flag
-    
-    if (PORTEbits.RE8 == 1) // if the button S5 is not pressed
-        flagS5ToUART = 1;
-    
-    T3CONbits.TON = 0;   // stop the timer
-    
-    // Mind the sequence !!!!
-    IFS0bits.INT0IF = 0; // reset interrupt flag of the button S5
-    IEC0bits.INT0IE = 1; // enable button S5 interrupt
-}
-
-// button interrupt S6
-void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt()
-{
-    IFS1bits.INT1IF = 0;           // reset interrupt flag
-    IEC1bits.INT1IE = 0;           // disable button interrupt
-    tmr_setup_period(TIMER4, 30);  // setup timer 4 for mechanical bouncing
-}
-
-// timer 4 interrupt
-void __attribute__((__interrupt__, __auto_psv__)) _T4Interrupt()
-{
-    IFS1bits.T4IF = 0; // reset interrupt flag
-    
-    if (PORTDbits.RD0 == 1) // if the button S6 is not pressed
-        flagS6Reset = 1;
-    
-    T4CONbits.TON = 0;   // stop the timer
-    
-    // Mind the sequence !!!!
-    IFS1bits.INT1IF = 0; // reset interrupt flag of the button S6
-    IEC1bits.INT1IE = 1; // enable button S6 interrupt
 }
 
 void algorithm()
@@ -153,13 +114,8 @@ int main(void)
     U2STAbits.URXISEL = 0b10; // set interrupt when buffer is 3/4 full
     IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
     
-    TRISEbits.TRISE8 = 1; // set the button S5 pin as input
-    IEC0bits.INT0IE = 1; // enable button S5 interrupt
-    IEC0bits.T3IE = 1; // enable timer 3 interrupt
-    
-    TRISDbits.TRISD0 = 1; // set the button S6 pin as input
-    IEC1bits.INT1IE = 1; // enable button S6 interrupt
-    IEC1bits.T4IE = 1; // enable timer 3 interrupt
+    initializeButtonS5(&onBtnS5Released);
+    initializeButtonS6(&onBtnS6Released);
     
     TRISBbits.TRISB0 = 0; // set the LED D3 as output
     TRISBbits.TRISB1 = 0; // set the LED D4 as output
@@ -169,7 +125,6 @@ int main(void)
     tmr_wait_ms(TIMER1, 1500);
     
     refresh_second_line();
-    
 
     tmr_setup_period(TIMER1, 10);
 

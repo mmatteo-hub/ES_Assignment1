@@ -19,6 +19,7 @@
       <itemPath>my_print_lib.h</itemPath>
       <itemPath>my_circular_buffer_lib.c</itemPath>
       <itemPath>my_circular_buffer_lib.h</itemPath>
+      <itemPath>my_btn_lib.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -246,10 +247,10 @@
         <property key="programmertogo.imagename" value=""/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
-        <property key="programoptions.pgmspeed" value="2"/>
+        <property key="programoptions.pgmspeed" value="Med"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preservedataflash.ranges"
-                  value="${programoptions.preservedataflash.ranges}"/>
+                  value="${memories.dataflash.default}"/>
         <property key="programoptions.preserveeeprom" value="false"/>
         <property key="programoptions.preserveeeprom.ranges" value="7ffc00-7fffff"/>
         <property key="programoptions.preserveprogram.ranges" value=""/>
