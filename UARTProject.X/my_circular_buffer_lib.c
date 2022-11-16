@@ -1,6 +1,6 @@
 /*
  * File:   circular_buffer.c
- * Author: ettor
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  *
  * Created on 8 novembre 2022, 11.55
  */

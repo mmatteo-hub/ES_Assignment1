@@ -1,6 +1,6 @@
 /*
  * File:   main.c
- * Author: ettor
+ * Author: Group
  *
  * Created on 27 settembre 2022, 11.16
  */
@@ -116,26 +116,24 @@ int main(void)
 {
     char word;
     int column_index = 0;
-    
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
-    U2STAbits.URXISEL = 0b10; // set interrupt when buffer is 3/4 full
-    IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
+    char counter_str[6] = "     \0";
     
     TRISBbits.TRISB0 = 0; // set the LED D3 as output
     TRISBbits.TRISB1 = 0; // set the LED D4 as output
     
-    cb_init(&buffer);
-    init_SPI();    
+    cb_init(&buffer);   
     init_btn_s5(&onBtnS5Released);
     init_btn_s6(&onBtnS6Released);
+    
+    init_uart();
+    init_spi();
     
     tmr_wait_ms(TIMER1, 1500);
 
     tmr_setup_period(TIMER1, 10);
 
-    refresh_second_line();
+    lcd_write(16, "Char Recv: ");
+    
     while (1)
     {
         algorithm();
@@ -154,12 +152,9 @@ int main(void)
         // If the button is pressed, write the chars back to the UART
         if(flagS5ToUART == 1)
         {
-            char str[5];
-            sprintf(str, "%u", character_counter);
-
-            for(int i = 0; str[i] != '\0'; i++)
-                U2TXREG = str[i];
-
+            charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
+            uart_write(counter_str);
+        
             // Resetting button flag
             flagS5ToUART = 0;
         }
@@ -168,17 +163,23 @@ int main(void)
         if(flagS6Reset == 1)
         {
             character_counter = 0;
-            clearFirstRow();
-            clearSecondRow();
-            refresh_second_line();
+            charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
+            
+            lcd_clear(0, 16);
+            lcd_write(26, counter_str);
+            column_index = 0;
+
             flagCounterOverflow = 0;
             
             // Resetting button flag
-            flagS6Reset = 0; // reset flag to reset
+            flagS6Reset = 0;
         }
         
-        while (SPI1STATbits.SPITBF == 1);
-        SPI1BUF = 0x80 + column_index;
+        // update second line
+        charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
+        lcd_write(26, counter_str);
+        
+        lcd_move_cursor(column_index);
     
         // Printing to the LCD all chars in the circular buffer
         while(buffer.count != 0 && !IFS0bits.T1IF)
@@ -195,11 +196,14 @@ int main(void)
             // if the end of the row has been reached, clear the first row and 
             // start writing again from the first row first column
             if(column_index == 0)
-                clearFirstRow();
+            {
+                lcd_clear(0, 16);
+                lcd_move_cursor(0);
+            }
 
             if(word == '\r' || word == '\n')
             {
-                clearFirstRow();
+                lcd_clear(0, 16);
                 column_index = 0;
             }
             else
@@ -210,8 +214,6 @@ int main(void)
                 column_index = (column_index + 1) % 16;
             }
         }
-        
-        update_second_line(character_counter, flagCounterOverflow);
 
         // Looping at 100HZ
         tmr_wait_period(TIMER1);

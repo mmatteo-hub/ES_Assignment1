@@ -1,3 +1,10 @@
+/* 
+ * File:   
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
+ * Comments:
+ * Revision history: 
+ */
+
 #ifndef MY_BUTTON_LIB_H
 #define MY_BUTTON_LIB_H
  

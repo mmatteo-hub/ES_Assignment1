@@ -1,6 +1,6 @@
 /*
  * File:   my_print_lib.c
- * Author: ettor
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  *
  * Created on 3 novembre 2022, 11.15
  */
@@ -9,37 +9,7 @@
 #include "my_print_lib.h"
 #include <p30F4011.h>
 
-void displayText(char text[])
-{
-    init_SPI();
-    
-    SPI1BUF = 0x80;
-    
-    for(int i = 0; text[i] != '\0'; i++)
-    {
-        
-        if (i % 16 == 0 && i > 15)
-        {
-            
-            if ((int)(i>>4) % 2 == 0)
-            {
-                while (SPI1STATbits.SPITBF == 1); // wait until not full
-                SPI1BUF = 0x80;
-            }
-
-            if ((int)(i>>4) % 2 != 0)
-            {
-                while (SPI1STATbits.SPITBF == 1); // wait until not full
-                SPI1BUF = 0xC0;
-            }
-        }
-     
-        while (SPI1STATbits.SPITBF == 1); // wait until not full
-        SPI1BUF = text[i];
-    }
-}
-
-void init_SPI()
+void init_spi()
 {
     SPI1CONbits.MSTEN = 1; // master mode 
     SPI1CONbits.MODE16 = 0; // 8 bit mode 
@@ -48,79 +18,76 @@ void init_SPI()
     SPI1STATbits.SPIEN = 1; // enable SPI
 }
 
-void clearFirstRow()
+void init_uart()
 {
-    while (SPI1STATbits.SPITBF == 1);
-    SPI1BUF = 0x80;
-    for(int i = 0; i<16 ; i++)
-    {
-        while (SPI1STATbits.SPITBF == 1); // wait until not full
-        SPI1BUF = ' ';
-    }
-    while (SPI1STATbits.SPITBF == 1);
-    SPI1BUF = 0x80;
+    U2BRG = 11; // (7372800 / 4) / (16 * 9600)
+    U2MODEbits.UARTEN = 1; // enable UART 
+    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
+    U2STAbits.URXISEL = 0b10; // set interrupt when buffer is 3/4 full
+    IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
 }
 
-void clearSecondRow()
+void lcd_clear(short start, short amount)
 {
-    while (SPI1STATbits.SPITBF == 1);
-    SPI1BUF = 0xC0;
-    for (int i = 0; i < 16; i++)
+    // Filling an array with spaces
+    char chars[amount];
+    for(int i=0; i<amount; ++i)
+        chars[i] = ' ';
+    // Writing the spaces on the LCD
+    lcd_write(start, chars);
+}
+
+void lcd_write(short start, char chars[])
+{
+    // Moving the cursor to the correct position
+    lcd_move_cursor(start);
+ 
+    // Actually writing on the LCD
+    for(int i = 0; chars[i] != '\0'; i++)
     {
-        while (SPI1STATbits.SPITBF == 1); // wait until not full
-        SPI1BUF = ' ';
+        while (SPI1STATbits.SPITBF == 1);
+        SPI1BUF = chars[i];
     }
 }
 
-void update_second_line(volatile unsigned int number, volatile short int flagCounterOverflow)
+void lcd_move_cursor(short position)
 {
-    // We have 5 char for writing the number, this is initialized as all blank
-    // spaces so that the number is printed on the right part of the screen
-    char output[5] = "     ";
+    // NB. The arg "position" goes from 0 to 31, after 15 we need to write on the second line
+    // The value 0x80 moves the cursor at the beginning of the first line
+    // The value 0xC0 moves the cursor at the beginning of the second line
+ 
+    while (SPI1STATbits.SPITBF == 1);
+    SPI1BUF = ((position<16) ? 0x80 : 0xC0) + (position%16);
+}
+
+void uart_write(char chars[])
+{
+    for(int i = 0; chars[i] != '\0'; i++)
+        U2TXREG = chars[i];
+}
+
+void charcounter_to_str(volatile long int counter, volatile short int is_overflow, char str[])
+{
     // If the number is over the max printable number, printing error
-    if(flagCounterOverflow)
+    if(is_overflow)
     {
-        output[0] = 'O';
-        output[1] = 'V';
-        output[2] = 'R';
-        output[3] = 'F';
-        output[4] = 'L';
+        str[0] = 'O';
+        str[1] = 'V';
+        str[2] = 'R';
+        str[3] = 'F';
+        str[4] = 'L';
     }
     else
     {
         int i = 4;
-        while(number > 0)
+        do
         {
             // Getting each digit from the number
-            output[i--] = (char)((number%10)+48);
-            number /= 10;
-        }
-    }
-    
-    // Wait for a possible transmission to end
-    while (SPI1STATbits.SPITBF == 1);
-    // Setting the cursor at the right place for printing the number
-    SPI1BUF = 0xCB;
-    
-    // Always printing 5 characters
-    for(int i = 0; i<5; i++)
-    {
-        // Wait for a possible transmission to end
-        while (SPI1STATbits.SPITBF == 1);
-        SPI1BUF = output[i];
-    }
-}
-
-void refresh_second_line(void)
-{
-    while (SPI1STATbits.SPITBF == 1); // wait until not full
-    SPI1BUF = 0xC0;
-    
-    char str[] = "Char Recv: 0";
-    
-    for(int i = 0; str[i] != '\0'; i++)
-    {
-        while (SPI1STATbits.SPITBF == 1); // wait until not full
-        SPI1BUF = str[i];
+            str[i--] = (char)((counter%10)+48);
+            counter /= 10;
+        } while(counter > 0);
+        
+        for(int j=0; j<=i; ++j)
+            str[j] = ' ';
     }
 }

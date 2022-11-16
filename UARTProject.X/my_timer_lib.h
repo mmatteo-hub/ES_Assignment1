@@ -21,7 +21,7 @@
 
 /* 
  * File:   
- * Author: 
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
  */

@@ -1,6 +1,6 @@
 /*
  * File:   my_timer_lib.c
- * Author: ettor
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  *
  * Created on 4 ottobre 2022, 11.55
  */

@@ -21,7 +21,7 @@
 
 /* 
  * File:   
- * Author: 
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
  */
@@ -33,11 +33,16 @@
 #define OVERFLOW_UNSIGNED_INT 65535
 
 #include <xc.h> // include processor files - each processor file is guarded.  
-
+void init_spi(void);
+void init_uart(void);
+void lcd_clear(short start, short amount);
+void lcd_write(short start, char chars[]);
+void lcd_move_cursor(short position);
+void uart_write(char chars[]);
+void charcounter_to_str(volatile long int counter, volatile short int is_overflow, char str[]);
 void displayText(char text[]);
-void init_SPI();
-void clearFirstRow();
-void clearSecondRow();
+void clearFirstRow(void);
+void clearSecondRow(void);
 void update_second_line(volatile unsigned int num, volatile short int flag);
 void refresh_second_line(void);
 
