@@ -65,23 +65,45 @@ void onBtnS6Released()
     flagS6Reset = 1;
 }
 
+// This is called when the UART buffer is 3/4 full
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
 {
-    // UART receive interrupt, triggered when buffer is 3/4 full
-    IFS1bits.U2RXIF = 0; // reset interrupt flag
-    
-    short int err = 0;
-    
-    while(U2STAbits.URXDA == 1) // there is something to read 
-        // put data in the circular buffer
-        if(cb_push_back(&buffer, U2RXREG) == -1) // not space to write
-        {
-            err = 1;
-            LATBbits.LATB0 = 1; // LED D3 on
-        }
-    
-    if(err)
-        LATBbits.LATB0 = 0; // LED D3 off
+    // Always reset the interrupt flags
+    IFS1bits.U2RXIF = 0;
+    // Handle the reading oft eh buffer
+    handleUARTReading();
+}
+
+// Handles the reading of the UART periferal and related errors
+void handleUARTReading()
+{
+    // Check if there is something to read from UART
+    while(U2STAbits.URXDA == 1)
+        if(cb_push_back(&buffer, U2RXREG) == -1)
+            LATBbits.LATB0 = 1;
+            
+    // If there is a overflow in the circular buffer, the led D3 is enabled
+    // and then disabled when there is nothing else do read.
+    // It is implicit that the data is disgarded.
+    LATBbits.LATB0 = 0;
+}
+
+// Handles the overflow of the UART if occurred
+void handleUARTOverflow()
+{
+    // Overflow did not occur, do nothing
+    if(U2STAbits.OERR == 0)
+        return;
+
+    // If there is a overflow in the UART buffer, the led D4 is enabled
+    LATBbits.LATB1 = 1;
+    // Clearing the UART buffer by storing the available data
+    handleUARTReading();
+    // Turning off led D4
+    LATBbits.LATB1 = 0;
+
+    // Clearing the UART overflow flag
+    U2STAbits.OERR = 0;
 }
 
 void algorithm()
@@ -89,24 +111,10 @@ void algorithm()
     tmr_wait_ms(TIMER2, 7);
 }
 
-void recUARTOverFlow() // manage the overflow for the UART in receive
-{
-    LATBbits.LATB1 = 1; // LED D4 on
-    for(int i = 0; i < 5; i++)
-        cb_push_back(&buffer, U2RXREG); // put data in the circular buffer
-    
-    U2STAbits.OERR = 0; // clear flag
-
-    LATBbits.LATB1 = 0; // LED D4 off
-}
-
 int main(void)
 {
     char word;
     int column_index = 0;
-    cb_init(&buffer);
-    int ret_val_pop = -1;
-    short int err = 0;
     
     U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1 
     U2MODEbits.UARTEN = 1; // enable UART 
@@ -114,43 +122,36 @@ int main(void)
     U2STAbits.URXISEL = 0b10; // set interrupt when buffer is 3/4 full
     IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
     
-    initializeButtonS5(&onBtnS5Released);
-    initializeButtonS6(&onBtnS6Released);
-    
     TRISBbits.TRISB0 = 0; // set the LED D3 as output
     TRISBbits.TRISB1 = 0; // set the LED D4 as output
     
-    init_SPI();
+    cb_init(&buffer);
+    init_SPI();    
+    init_btn_s5(&onBtnS5Released);
+    init_btn_s6(&onBtnS6Released);
     
     tmr_wait_ms(TIMER1, 1500);
-    
-    refresh_second_line();
 
     tmr_setup_period(TIMER1, 10);
 
+    refresh_second_line();
     while (1)
     {
         algorithm();
         
-        // remove residual data
-        IEC1bits.U2RXIE = 0; // disable UART receiver interrupt
-        while (U2STAbits.URXDA == 1) // there is something to read
-            // put data in the circular buffer
-            if(cb_push_back(&buffer, U2RXREG) == -1) // not space to write
-            {
-                err = 1;
-                LATBbits.LATB0 = 1; // LED D3 on
-            }
-
-        if(err)
-            LATBbits.LATB0 = 0; // LED D3 off
+        // Temporarely disable the UART interrupt to read data
+        // This does not cause problems if data arrives now since we are empting the buffer
+        IEC1bits.U2RXIE = 0;
+        // Handle the reading oft eh buffer
+        handleUARTReading();
+        // Enable UART interrupt again
+        IEC1bits.U2RXIE = 1;
         
-        IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
+        // Check if there was an overflow in the UART buffer
+        recUARTOverFlow();
         
-        if(U2STAbits.OERR == 1) // overflow occurred
-            recUARTOverFlow();
-        
-        if(flagS5ToUART == 1) // write to the UART iff flag enabled
+        // If the button is pressed, write the chars back to the UART
+        if(flagS5ToUART == 1) 
         {
             char str[5];
             sprintf(str, "%ld", character_counter);
@@ -158,52 +159,57 @@ int main(void)
             for(int i = 0; str[i] != '\0'; i++)
                 U2TXREG = str[i];
 
-            flagS5ToUART = 0; // reset flag to UART
+            // Resetting button flag
+            flagS5ToUART = 0;
         }
         
-        if(flagS6Reset == 1) // clear first row and reset counter
+        // If the button is pressed, clear the first row and reset the counter
+        if(flagS6Reset == 1)
         {
             clearFirstRow();
             clearSecondRow();
-            character_counter = 0;
             refresh_second_line();
             
+            // Resetting button flag
             flagS6Reset = 0; // reset flag to reset
         }
         
         while (SPI1STATbits.SPITBF == 1);
         SPI1BUF = 0x80 + column_index;
     
-        // print to the LCD all chars in the circular buffer
-        while(buffer.count != 0 && !IFS0bits.T1IF) // while the buffer count is different and the timer has not expired yet
-        
-        // while(buffer.count != 0)
+        // Printing to the LCD all chars in the circular buffer
+        while(buffer.count != 0 && !IFS0bits.T1IF)
         {
-            ret_val_pop = cb_pop_front(&buffer, &word);
-            if(ret_val_pop) // something read
+            // If there is nothing to read, exit
+            if(!cb_pop_front(&buffer, &word))
+                break; // something read
+
+            // Store the number of characters written on the LCD
+            character_counter++;
+
+            // if the end of the row has been reached, clear the first row and 
+            // start writing again from the first row first column
+            if(column_index == 0)
+                clearFirstRow();
+
+            if(word == '\r' || word == '\n')
             {
-                character_counter++; // store the number of character received
-
-                // if the end of the row has been reached, clear the first row and 
-                // start writing again from the first row first column
-                if(column_index == 0)
-                    clearFirstRow();
-
-                if(word == '\r' || word == '\n')
-                {
-                    clearFirstRow();
-                    column_index = 0;
-                }
-                else
-                {
-                    while (SPI1STATbits.SPITBF == 1); // wait until not full
-                    SPI1BUF = word; // write on the LCD
-                    column_index = (column_index + 1) % 16;
-                }
+                clearFirstRow();
+                column_index = 0;
+            }
+            else
+            {
+                // Wait for a possible ongoing transmission
+                while (SPI1STATbits.SPITBF == 1);
+                SPI1BUF = word; // write on the LCD
+                column_index = (column_index + 1) % 16;
             }
         }
+
         update_second_line(character_counter);
-        tmr_wait_period(TIMER1); // loop at 100Hz
+
+        // Looping at 100HZ
+        tmr_wait_period(TIMER1);
     }
     return 0;
 }

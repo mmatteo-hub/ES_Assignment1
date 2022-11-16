@@ -112,22 +112,6 @@ void update_second_line(long int number)
     
 }
 
-/*void update_second_line(int num)
-{    
-    while (SPI1STATbits.SPITBF == 1); // wait until not full
-    SPI1BUF = 0xCB;
-    
-    // fill the string for the second row
-    char str[5];
-    sprintf(str, "%d", num);
-    
-    for(int i = 0; str[i] != '\0'; i++)
-    {
-        while (SPI1STATbits.SPITBF == 1); // wait until not full
-        SPI1BUF = str[i];
-    }
-}
-*/
 void refresh_second_line(void)
 {
     while (SPI1STATbits.SPITBF == 1); // wait until not full

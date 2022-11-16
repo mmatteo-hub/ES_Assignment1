@@ -1,10 +1,3 @@
-/* 
- * File:   my_btn_lib.h
- * Author: matteomaragliano
- *
- * Created on November 15, 2022, 2:26 PM
- */
-
 #ifndef MY_BUTTON_LIB_H
 #define MY_BUTTON_LIB_H
  
@@ -31,7 +24,7 @@
     // The function that will be called when the button is pressed
     void (*_buttonS5CallbackPtr)(void);
  
-    void initializeButtonS5(void(*callback)(void))
+    void init_btn_s5(void(*callback)(void))
     {
         // Storing callback
         _buttonS5CallbackPtr = callback;
@@ -113,7 +106,7 @@
             IEC0bits.INT0IE = 1;
         }
     #elif TIMER_FOR_BUTTON_S5 == TIMER5
-        void __attribute__((__interrupt__, __auto_psv__)) _T4Interrupt() 
+        void __attribute__((__interrupt__, __auto_psv__)) _T5Interrupt() 
         {
             IFS1bits.T5IF = 0;
             T5CONbits.TON = 0;
@@ -132,7 +125,7 @@
  
     void (*_buttonS6CallbackPtr)(void);
  
-    void initializeButtonS6(void(*callback)(void))
+    void init_btn_s6(void(*callback)(void))
     {
         // Storing callback
         _buttonS6CallbackPtr = callback;
@@ -213,7 +206,7 @@
             IEC1bits.INT1IE = 1;
         }
     #elif TIMER_FOR_BUTTON_S6 == TIMER5
-        void __attribute__((__interrupt__, __auto_psv__)) _T4Interrupt() 
+        void __attribute__((__interrupt__, __auto_psv__)) _T45nterrupt() 
         {
             IFS1bits.T5IF = 0;
             T5CONbits.TON = 0;
