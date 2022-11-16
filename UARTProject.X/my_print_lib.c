@@ -66,7 +66,7 @@ void uart_write(char chars[])
         U2TXREG = chars[i];
 }
 
-void charcounter_to_str(volatile long int counter, volatile short int is_overflow, char str[])
+void charcounter_to_str(volatile unsigned int counter, volatile short int is_overflow, char str[])
 {
     // If the number is over the max printable number, printing error
     if(is_overflow)

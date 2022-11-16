@@ -95,54 +95,54 @@ MP_LINKER_FILE_OPTION=,--script=p30F4011.gld
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: compile
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/d8802b11494fd64863ee20388aa13f693451e128 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/ca43b5ae79e7488e16d50e1c4d3816476ed5c2bc .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  main.c  -o ${OBJECTDIR}/main.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/main.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  main.c  -o ${OBJECTDIR}/main.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/main.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_timer_lib.o: my_timer_lib.c  .generated_files/flags/default/fedde65ad2d23e717d943630852f821df45bc490 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_timer_lib.o: my_timer_lib.c  .generated_files/flags/default/ec022496aeee2d14cc8097d4bd5e0fb4c084775e .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_timer_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_timer_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_timer_lib.c  -o ${OBJECTDIR}/my_timer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_timer_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_timer_lib.c  -o ${OBJECTDIR}/my_timer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_timer_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_print_lib.o: my_print_lib.c  .generated_files/flags/default/a20b478fe5b30f4f1faaa17cfcab7e764a9aec65 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_print_lib.o: my_print_lib.c  .generated_files/flags/default/171aa3ef2179c3fb8b7dcdbb73725f901ca1ff6f .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_print_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_print_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_print_lib.c  -o ${OBJECTDIR}/my_print_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_print_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_print_lib.c  -o ${OBJECTDIR}/my_print_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_print_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_circular_buffer_lib.o: my_circular_buffer_lib.c  .generated_files/flags/default/ae53b23671c9f69dbdf3b80802f7ee43cd417c51 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_circular_buffer_lib.o: my_circular_buffer_lib.c  .generated_files/flags/default/b3efe3346c65915d5b699cf6d8d1658820e88257 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_circular_buffer_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_circular_buffer_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_circular_buffer_lib.c  -o ${OBJECTDIR}/my_circular_buffer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_circular_buffer_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_circular_buffer_lib.c  -o ${OBJECTDIR}/my_circular_buffer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_circular_buffer_lib.o.d"      -g -D__DEBUG     -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
 else
-${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/cd8ffe49e38efd56cb9078306d7d738886b4f032 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/8b94ccaa7bf50c6131da783439de3f32ce4834ae .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  main.c  -o ${OBJECTDIR}/main.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/main.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  main.c  -o ${OBJECTDIR}/main.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/main.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_timer_lib.o: my_timer_lib.c  .generated_files/flags/default/15739eb19bf76f88e246c94ca0337c51ffd4446c .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_timer_lib.o: my_timer_lib.c  .generated_files/flags/default/2fbc030f4de2a175aa339eb23e5a52dc598052b9 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_timer_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_timer_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_timer_lib.c  -o ${OBJECTDIR}/my_timer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_timer_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_timer_lib.c  -o ${OBJECTDIR}/my_timer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_timer_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_print_lib.o: my_print_lib.c  .generated_files/flags/default/94a26e0e6131a6b96229a0fb988094d9c0922d46 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_print_lib.o: my_print_lib.c  .generated_files/flags/default/de48e0c529ec3cfb918824d2db280c94411c9cbe .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_print_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_print_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_print_lib.c  -o ${OBJECTDIR}/my_print_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_print_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_print_lib.c  -o ${OBJECTDIR}/my_print_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_print_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
-${OBJECTDIR}/my_circular_buffer_lib.o: my_circular_buffer_lib.c  .generated_files/flags/default/a803e2abd5b94caffeda6eb86557d7351df9db11 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
+${OBJECTDIR}/my_circular_buffer_lib.o: my_circular_buffer_lib.c  .generated_files/flags/default/5dad2c9c19b08af6f2f05cefe3099593f9bbc8b3 .generated_files/flags/default/78b5023c5e9ef3d435e434410e50b575e7db83ae
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/my_circular_buffer_lib.o.d 
 	@${RM} ${OBJECTDIR}/my_circular_buffer_lib.o 
-	${MP_CC} $(MP_EXTRA_CC_PRE)  my_circular_buffer_lib.c  -o ${OBJECTDIR}/my_circular_buffer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_circular_buffer_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
+	${MP_CC} $(MP_EXTRA_CC_PRE)  my_circular_buffer_lib.c  -o ${OBJECTDIR}/my_circular_buffer_lib.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MP -MMD -MF "${OBJECTDIR}/my_circular_buffer_lib.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O2 -msmart-io=1 -Wall -msfr-warn=off    -mdfp="${DFP_DIR}/xc16"
 	
 endif
 

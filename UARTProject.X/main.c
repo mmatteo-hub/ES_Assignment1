@@ -1,6 +1,6 @@
 /*
  * File:   main.c
- * Author: Group
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani
  *
  * Created on 27 settembre 2022, 11.16
  */
@@ -166,7 +166,7 @@ int main(void)
             charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
             
             lcd_clear(0, 16);
-            lcd_write(26, counter_str);
+            lcd_write(27, counter_str);
             column_index = 0;
 
             flagCounterOverflow = 0;
@@ -177,7 +177,7 @@ int main(void)
         
         // update second line
         charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
-        lcd_write(26, counter_str);
+        lcd_write(27, counter_str);
         
         lcd_move_cursor(column_index);
     

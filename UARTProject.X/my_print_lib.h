@@ -39,11 +39,5 @@ void lcd_clear(short start, short amount);
 void lcd_write(short start, char chars[]);
 void lcd_move_cursor(short position);
 void uart_write(char chars[]);
-void charcounter_to_str(volatile long int counter, volatile short int is_overflow, char str[]);
-void displayText(char text[]);
-void clearFirstRow(void);
-void clearSecondRow(void);
-void update_second_line(volatile unsigned int num, volatile short int flag);
-void refresh_second_line(void);
-
+void charcounter_to_str(volatile unsigned int counter, volatile short int is_overflow, char str[]);
 #endif
