@@ -72,13 +72,13 @@ void clearSecondRow()
     }
 }
 
-void update_second_line(long int number)
-{  
+void update_second_line(volatile unsigned int number, volatile short int flagCounterOverflow)
+{
     // We have 5 char for writing the number, this is initialized as all blank
     // spaces so that the number is printed on the right part of the screen
     char output[5] = "     ";
     // If the number is over the max printable number, printing error
-    if(number > 99999)
+    if(flagCounterOverflow)
     {
         output[0] = 'O';
         output[1] = 'V';
@@ -109,7 +109,6 @@ void update_second_line(long int number)
         while (SPI1STATbits.SPITBF == 1);
         SPI1BUF = output[i];
     }
-    
 }
 
 void refresh_second_line(void)

@@ -27,9 +27,10 @@
  */
 
 // This is a guard condition so that contents of this file are not included
-// more than once.  
+// more than once.
 #ifndef MY_PRINT_LIB_H
 #define	MY_PRINT_LIB_H
+#define OVERFLOW_UNSIGNED_INT 65535
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
@@ -37,7 +38,7 @@ void displayText(char text[]);
 void init_SPI();
 void clearFirstRow();
 void clearSecondRow();
-void update_second_line(long int num);
+void update_second_line(volatile unsigned int num, volatile short int flag);
 void refresh_second_line(void);
 
 #endif

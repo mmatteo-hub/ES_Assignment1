@@ -51,9 +51,10 @@
 
 // global variables
 volatile circular_buffer buffer;
-volatile long int character_counter = 0;
+volatile unsigned int character_counter = 0;
 volatile short int flagS5ToUART = 0;
 volatile short int flagS6Reset = 0;
+volatile short int flagCounterOverflow = 0;
 
 void onBtnS5Released()
 {
@@ -151,10 +152,10 @@ int main(void)
         handleUARTOverflow();
         
         // If the button is pressed, write the chars back to the UART
-        if(flagS5ToUART == 1) 
+        if(flagS5ToUART == 1)
         {
             char str[5];
-            sprintf(str, "%ld", character_counter);
+            sprintf(str, "%u", character_counter);
 
             for(int i = 0; str[i] != '\0'; i++)
                 U2TXREG = str[i];
@@ -170,6 +171,7 @@ int main(void)
             clearFirstRow();
             clearSecondRow();
             refresh_second_line();
+            flagCounterOverflow = 0;
             
             // Resetting button flag
             flagS6Reset = 0; // reset flag to reset
@@ -187,6 +189,8 @@ int main(void)
 
             // Store the number of characters written on the LCD
             character_counter++;
+            if(character_counter >= OVERFLOW_UNSIGNED_INT)
+                flagCounterOverflow = 1;
 
             // if the end of the row has been reached, clear the first row and 
             // start writing again from the first row first column
@@ -206,8 +210,8 @@ int main(void)
                 column_index = (column_index + 1) % 16;
             }
         }
-
-        update_second_line(character_counter);
+        
+        update_second_line(character_counter, flagCounterOverflow);
 
         // Looping at 100HZ
         tmr_wait_period(TIMER1);
