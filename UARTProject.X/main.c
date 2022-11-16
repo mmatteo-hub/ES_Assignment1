@@ -65,15 +65,6 @@ void onBtnS6Released()
     flagS6Reset = 1;
 }
 
-// This is called when the UART buffer is 3/4 full
-void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
-{
-    // Always reset the interrupt flags
-    IFS1bits.U2RXIF = 0;
-    // Handle the reading oft eh buffer
-    handleUARTReading();
-}
-
 // Handles the reading of the UART periferal and related errors
 void handleUARTReading()
 {
@@ -86,6 +77,15 @@ void handleUARTReading()
     // and then disabled when there is nothing else do read.
     // It is implicit that the data is disgarded.
     LATBbits.LATB0 = 0;
+}
+
+// This is called when the UART buffer is 3/4 full
+void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
+{
+    // Always reset the interrupt flags
+    IFS1bits.U2RXIF = 0;
+    // Handle the reading oft eh buffer
+    handleUARTReading();
 }
 
 // Handles the overflow of the UART if occurred
@@ -148,7 +148,7 @@ int main(void)
         IEC1bits.U2RXIE = 1;
         
         // Check if there was an overflow in the UART buffer
-        recUARTOverFlow();
+        handleUARTOverflow();
         
         // If the button is pressed, write the chars back to the UART
         if(flagS5ToUART == 1) 
@@ -166,6 +166,7 @@ int main(void)
         // If the button is pressed, clear the first row and reset the counter
         if(flagS6Reset == 1)
         {
+            character_counter = 0;
             clearFirstRow();
             clearSecondRow();
             refresh_second_line();
