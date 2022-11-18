@@ -20,8 +20,8 @@
  */
 
 /* 
- * File:   
- * Author: 
+ * File: my_circular_buffer_lib.h
+ * Author: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
  */
@@ -37,9 +37,9 @@
 
 typedef struct circular_buffer {
     char container[SIZE]; // the container of the items
-    int count; // number of items in the buffer
-    int head; // index to the first element
-    int tail; // index to the last element
+    int count;            // number of items in the buffer
+    int head;             // index to the first element
+    int tail;             // index to the last element
 } circular_buffer;
 
 int cb_length();

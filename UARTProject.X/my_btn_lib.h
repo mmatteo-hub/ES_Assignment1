@@ -1,5 +1,5 @@
 /* 
- * File:   
+ * File: my_btn_lib.h
  * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
@@ -20,7 +20,7 @@
 // DEFINING THE TIMER INTERRUPT
 // 1. Always reset the related interrupt flag
 // 2. Disable the timer
-// 3. Invoke the button handler when the button is released
+// 3. Invoke the button handler if the button is still released
 // NB. The following two instruction is necessary that are executed in order
 // otherwise the interrupt might fire again.
 // 4. Resetting the interrupt flag of the related button interrupt

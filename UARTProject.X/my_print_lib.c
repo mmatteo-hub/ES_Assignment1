@@ -11,20 +11,23 @@
 
 void init_spi()
 {
-    SPI1CONbits.MSTEN = 1; // master mode 
+    // Function to init the SPI
+    SPI1CONbits.MSTEN = 1;  // master mode 
     SPI1CONbits.MODE16 = 0; // 8 bit mode 
-    SPI1CONbits.PPRE = 3; // primary prescaler 
-    SPI1CONbits.SPRE = 6; // secondary prescaler 
+    SPI1CONbits.PPRE = 3;   // primary prescaler 
+    SPI1CONbits.SPRE = 6;   // secondary prescaler 
     SPI1STATbits.SPIEN = 1; // enable SPI
 }
 
 void init_uart()
 {
-    U2BRG = 11; // (7372800 / 4) / (16 * 9600)
-    U2MODEbits.UARTEN = 1; // enable UART 
-    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
+    // Function to init the UART, it will trigger the interrupt when 3/4 of the
+    // UART buffer is full
+    U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
+    U2MODEbits.UARTEN = 1;    // enable UART 
+    U2STAbits.UTXEN = 1;      // enable U1TX (must be after UARTEN)
     U2STAbits.URXISEL = 0b10; // set interrupt when buffer is 3/4 full
-    IEC1bits.U2RXIE = 1; // enable UART receiver interrupt
+    IEC1bits.U2RXIE = 1;      // enable UART receiver interrupt
 }
 
 void lcd_clear(short start, short amount)

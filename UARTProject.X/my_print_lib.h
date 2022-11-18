@@ -20,7 +20,7 @@
  */
 
 /* 
- * File:   
+ * File: my_print_lib.h
  * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
@@ -32,7 +32,8 @@
 #define	MY_PRINT_LIB_H
 #define OVERFLOW_UNSIGNED_INT 65535
 
-#include <xc.h> // include processor files - each processor file is guarded.  
+#include <xc.h> // include processor files - each processor file is guarded.
+
 void init_spi(void);
 void init_uart(void);
 void lcd_clear(short start, short amount);
@@ -40,4 +41,5 @@ void lcd_write(short start, char chars[]);
 void lcd_move_cursor(short position);
 void uart_write(char chars[]);
 void charcounter_to_str(volatile unsigned int counter, volatile short int is_overflow, char str[]);
+
 #endif

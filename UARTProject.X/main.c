@@ -1,6 +1,6 @@
 /*
  * File:   main.c
- * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani
+ * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  *
  * Created on 27 settembre 2022, 11.16
  */
@@ -71,6 +71,7 @@ void handleUARTReading()
 {
     // Check if there is something to read from UART
     while(U2STAbits.URXDA == 1)
+        // Put the data in the circular buffer
         if(cb_push_back(&buffer, U2RXREG) == -1)
             LATBbits.LATB0 = 1;
             
@@ -80,30 +81,29 @@ void handleUARTReading()
     LATBbits.LATB0 = 0;
 }
 
-// This is called when the UART buffer is 3/4 full
+// This is triggered when the UART buffer is 3/4 full
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt()
 {
-    // Always reset the interrupt flags
+    // Reset the interrupt flag
     IFS1bits.U2RXIF = 0;
-    // Handle the reading oft eh buffer
+    // Handle the reading of the buffer
     handleUARTReading();
 }
 
-// Handles the overflow of the UART if occurred
+// Handle the overflow of the UART
 void handleUARTOverflow()
 {
     // Overflow did not occur, do nothing
     if(U2STAbits.OERR == 0)
         return;
-
+    
     // If there is a overflow in the UART buffer, the led D4 is enabled
     LATBbits.LATB1 = 1;
-    // Clearing the UART buffer by storing the available data
+    // Clear the UART buffer by storing all the available data
     handleUARTReading();
-    // Turning off led D4
+    // Turn off led D4
     LATBbits.LATB1 = 0;
-
-    // Clearing the UART overflow flag
+    // Clear the UART overflow flag
     U2STAbits.OERR = 0;
 }
 
@@ -118,21 +118,19 @@ int main(void)
     int column_index = 0;
     char counter_str[6] = "     \0";
     
-    TRISBbits.TRISB0 = 0; // set the LED D3 as output
-    TRISBbits.TRISB1 = 0; // set the LED D4 as output
+    TRISBbits.TRISB0 = 0;          // set the LED D3 as output
+    TRISBbits.TRISB1 = 0;          // set the LED D4 as output
     
-    cb_init(&buffer);   
-    init_btn_s5(&onBtnS5Released);
-    init_btn_s6(&onBtnS6Released);
-    
-    init_uart();
-    init_spi();
-    
-    tmr_wait_ms(TIMER1, 1500);
+    cb_init(&buffer);              // init the circular buffer structure
+    init_btn_s5(&onBtnS5Released); // init the button S5 handler
+    init_btn_s6(&onBtnS6Released); // init the button S6 handler
+    init_uart();                   // init the UART
+    init_spi();                    // init the SPI
+    tmr_wait_ms(TIMER1, 1500);     // wait 1.5s to start the SPI correctly
 
-    tmr_setup_period(TIMER1, 10);
+    tmr_setup_period(TIMER1, 10);  // main timer to syncronize the loop
 
-    lcd_write(16, "Char Recv: ");
+    lcd_write(16, "Char Recv: ");  // init the SPI screen
     
     while (1)
     {
@@ -141,7 +139,7 @@ int main(void)
         // Temporarely disable the UART interrupt to read data
         // This does not cause problems if data arrives now since we are empting the buffer
         IEC1bits.U2RXIE = 0;
-        // Handle the reading oft eh buffer
+        // Handle the reading of the buffer
         handleUARTReading();
         // Enable UART interrupt again
         IEC1bits.U2RXIE = 1;
@@ -149,58 +147,64 @@ int main(void)
         // Check if there was an overflow in the UART buffer
         handleUARTOverflow();
         
-        // If the button is pressed, write the chars back to the UART
+        // If the button S5 is pressed, write the chars back to the UART
         if(flagS5ToUART == 1)
         {
+            // convert efficiently the character counter to string, handling the overflow
             charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
             uart_write(counter_str);
         
-            // Resetting button flag
+            // Reset the S5 button flag
             flagS5ToUART = 0;
         }
         
-        // If the button is pressed, clear the first row and reset the counter
+        // If the button S6 is pressed, clear the first row and reset the counter
         if(flagS6Reset == 1)
         {
             character_counter = 0;
+            // convert efficiently the character counter to string, handling the overflow
             charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
             
             lcd_clear(0, 16);
             lcd_write(27, counter_str);
             column_index = 0;
-
+            // Reset the counter overflow
             flagCounterOverflow = 0;
             
-            // Resetting button flag
+            // Reset the S6 button flag
             flagS6Reset = 0;
         }
         
-        // update second line
+        // update the second line of the LCD
         charcounter_to_str(character_counter, flagCounterOverflow, counter_str);
         lcd_write(27, counter_str);
         
         lcd_move_cursor(column_index);
     
-        // Printing to the LCD all chars in the circular buffer
+        // Print to the LCD all chars in the circular buffer until the timer expires
+        // or the buffer is empty
         while(buffer.count != 0 && !IFS0bits.T1IF)
         {
-            // If there is nothing to read, exit
+            // If there is nothing to read, exit, otherwise read one char
             if(!cb_pop_front(&buffer, &word))
                 break; // something read
 
-            // Store the number of characters written on the LCD
+            // Increment the number of characters written on the LCD
             character_counter++;
+            // Check on the overflow of the counter
             if(character_counter >= OVERFLOW_UNSIGNED_INT)
                 flagCounterOverflow = 1;
 
-            // if the end of the row has been reached, clear the first row and 
+            // If the end of the row has been reached, clear the first row and 
             // start writing again from the first row first column
             if(column_index == 0)
             {
                 lcd_clear(0, 16);
                 lcd_move_cursor(0);
             }
-
+            
+            // Whenever a CR ?\r? or LF ?\n? character is received, clear the 
+            // first row
             if(word == '\r' || word == '\n')
             {
                 lcd_clear(0, 16);
@@ -210,13 +214,14 @@ int main(void)
             {
                 // Wait for a possible ongoing transmission
                 while (SPI1STATbits.SPITBF == 1);
-                SPI1BUF = word; // write on the LCD
+                // Write on the LCD
+                SPI1BUF = word;
+                // Increment the column index
                 column_index = (column_index + 1) % 16;
             }
-        }
-
-        // Looping at 100HZ
+        } // end while
+        // Syncronize with the 100HZ frequency
         tmr_wait_period(TIMER1);
-    }
+    } // end while
     return 0;
 }

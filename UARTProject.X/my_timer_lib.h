@@ -20,7 +20,7 @@
  */
 
 /* 
- * File:   
+ * File: my_timer_lib.h
  * Authors: Carlone Matteo, Maragliano Matteo, Musumeci Mattia, Sani Ettore
  * Comments:
  * Revision history: 
