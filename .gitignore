@@ -1,2 +1,5 @@
 /UARTProject.X/dist/
 /UARTProject.X/build/
+*.mk
+*.xml
+UARTProject.X/nbproject/private/private.xml
